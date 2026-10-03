@@ -405,7 +405,7 @@ process_line() {
             side="Unknown"
         fi
 
-        notify "🗺️ Loading **$map** — $mode / $side / $lighting"
+        notify "🗺️ Map changing to: **$map** — $mode / $side / $lighting"
 
         return
     fi
