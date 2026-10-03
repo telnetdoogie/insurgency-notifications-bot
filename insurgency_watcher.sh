@@ -455,9 +455,9 @@ process_line() {
         [[ -z "$name" ]] && name="$known_name"
 
         if [[ "$name" != "$known_name" ]]; then
-            notify "🔴 $discord_tag (**$name**) left the server" notify
+            notify "🔴 $discord_tag (**$name**) left the server"
         else
-            notify "🔴 $discord_tag left the server" notify
+            notify "🔴 $discord_tag left the server"
         fi
 
         return
