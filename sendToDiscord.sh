@@ -1,11 +1,47 @@
 #!/bin/bash
-message="$@"
 
-## format to parse to curl
-msg_content=\"$message\"
+notify=false
 
-## discord webhook
-url='https://discord.com/api/webhooks/<some_webhook_id_here>'
+if [[ "$1" == "--notify" ]]; then
+    notify=true
+    shift
+fi
 
-## sending the message to discord
-curl -H "Content-Type: application/json" -sS -X POST -d "{\"username\": \"My_Bot_Name\", \"content\": $msg_content}" $url
+message="$*"
+
+## Discord webhook
+url='https://discord.com/api/webhooks/<webhook id>'
+username='<bot name>'
+
+if $notify; then
+
+    ## Normal Discord notification
+    payload=$(jq -n \
+        --arg username "$username" \
+        --arg content "$message" \
+        '{
+            username: $username,
+            content: $content
+        }'
+    )
+
+else
+
+    ## Suppress Discord push notification
+    payload=$(jq -n \
+        --arg username "$username" \
+        --arg content "$message" \
+        '{
+            username: $username,
+            flags: 4096,
+            content: $content
+        }'
+    )
+
+fi
+
+curl -sS \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d "$payload" \
+    "$url"
