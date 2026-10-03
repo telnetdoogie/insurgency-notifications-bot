@@ -354,36 +354,54 @@ process_line() {
     #
     # Map change / server travel
     #
-    # Example:
-    # ProcessServerTravel: Compound?Scenario=Scenario_Outskirts_Checkpoint_Insurgents?Game=Checkpoint?Lighting=Day?
+    # Examples:
     #
-    if [[ "$line" =~ ProcessServerTravel:\ ([^?]+)\?Scenario=([^?]+)\?Game=([^?]+)\?Lighting=([^?]+) ]]; then
+    # Forest?scenario=Scenario_Forest_Checkpoint_Security?Lighting=Day
+    #
+    # Compound?Scenario=Scenario_Outskirts_Checkpoint_Insurgents?Game=Checkpoint?Lighting=Day?
+    #
+    if [[ "$line" =~ ProcessServerTravel:\ ([^?]+)\?[Ss]cenario=([^?]+) ]]; then
 
         internal_map="${BASH_REMATCH[1]}"
         scenario="${BASH_REMATCH[2]}"
-        mode="${BASH_REMATCH[3]}"
-        lighting="${BASH_REMATCH[4]}"
 
         #
-        # Strip "Scenario_" from:
+        # Lighting may appear anywhere later in the travel URL.
         #
-        # Scenario_Outskirts_Checkpoint_Insurgents
+        lighting="Unknown"
+
+        if [[ "$line" =~ \?[Ll]ighting=([^?\ ]+) ]]; then
+            lighting="${BASH_REMATCH[1]}"
+        fi
+
+        #
+        # Remove Scenario_ prefix:
+        #
+        # Scenario_Forest_Checkpoint_Security
+        # becomes:
+        # Forest_Checkpoint_Security
         #
         scenario="${scenario#Scenario_}"
 
         #
-        # Pull the display map and side from the scenario.
+        # Parse:
         #
-        # Since we already know the game mode, use it as the delimiter.
+        # Forest_Checkpoint_Security
+        # Outskirts_Checkpoint_Insurgents
         #
-        if [[ "$scenario" =~ ^(.+)_${mode}_(Security|Insurgents)$ ]]; then
+        # The first capture is intentionally greedy so map names
+        # containing underscores will still work.
+        #
+        if [[ "$scenario" =~ ^(.+)_([^_]+)_(Security|Insurgents)$ ]]; then
             map="${BASH_REMATCH[1]}"
-            side="${BASH_REMATCH[2]}"
+            mode="${BASH_REMATCH[2]}"
+            side="${BASH_REMATCH[3]}"
         else
             #
-            # Fallback if we encounter an odd scenario naming scheme.
+            # Unexpected scenario format.
             #
             map="$internal_map"
+            mode="Unknown"
             side="Unknown"
         fi
 
