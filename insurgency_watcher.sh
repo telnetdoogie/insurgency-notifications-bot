@@ -143,9 +143,15 @@ load_users() {
 
 notify() {
     local message="$1"
+    local notification="${2:-silent}"
 
     echo "$(date): $message"
-    "$DISCORD_SCRIPT" "$message"
+
+    if [[ "$notification" == "notify" ]]; then
+        "$DISCORD_SCRIPT" --notify "$message"
+    else
+        "$DISCORD_SCRIPT" "$message"
+    fi
 }
 
 find_active_steam_id_by_name() {
@@ -240,9 +246,9 @@ process_line() {
             # their Steam display name.
             #
             if [[ "$name" != "$known_name" ]]; then
-                notify "🟢 $discord_tag joined the server as **$name**"
+                notify "🟢 $discord_tag joined the server as **$name**" notify
             else
-                notify "🟢 $discord_tag joined the server"
+                notify "🟢 $discord_tag joined the server" notify
             fi
 
         #
@@ -449,9 +455,9 @@ process_line() {
         [[ -z "$name" ]] && name="$known_name"
 
         if [[ "$name" != "$known_name" ]]; then
-            notify "🔴 $discord_tag (**$name**) left the server"
+            notify "🔴 $discord_tag (**$name**) left the server" notify
         else
-            notify "🔴 $discord_tag left the server"
+            notify "🔴 $discord_tag left the server" notify
         fi
 
         return
