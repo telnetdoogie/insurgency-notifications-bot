@@ -8,4 +8,4 @@ msg_content=\"$message\"
 url='https://discord.com/api/webhooks/<some_webhook_id_here>'
 
 ## sending the message to discord
-curl -H "Content-Type: application/json" -X POST -d "{\"username\": \"My_Bot_Name\", \"content\": $msg_content}" $url
+curl -H "Content-Type: application/json" -sS -X POST -d "{\"username\": \"My_Bot_Name\", \"content\": $msg_content}" $url

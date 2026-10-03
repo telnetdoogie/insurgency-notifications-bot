@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="$SCRIPT_DIR/$(basename "$0")"
+
 CONTAINER="insurgency-sandstorm"
-USERS_FILE="./users.json"
-DISCORD_SCRIPT="./sendToDiscord.sh"
+USERS_FILE="$SCRIPT_DIR/users.json"
+DISCORD_SCRIPT="$SCRIPT_DIR/sendToDiscord.sh"
 
 PID_FILE="/tmp/sandstorm-watcher.pid"
 WATCHER_LOG="/tmp/sandstorm-watcher.log"
 
-SCRIPT_PATH="$(readlink -f "$0")"
-
-declare -A KNOWN_USERS
+declare -A PLAYER_NAMES
+declare -A DISCORD_TAGS
 declare -A PENDING_USERS
 declare -A ACTIVE_USERS
 declare -A LAST_LEAVE
@@ -122,15 +124,20 @@ cleanup() {
 # ----------------------------------------------------------------------
 
 load_users() {
-    KNOWN_USERS=()
+    PLAYER_NAMES=()
+    DISCORD_TAGS=()
 
-    while IFS=$'\t' read -r steam_id label; do
-        KNOWN_USERS["$steam_id"]="$label"
+    while IFS=$'\t' read -r steam_id player_name discord_tag; do
+        PLAYER_NAMES["$steam_id"]="$player_name"
+        DISCORD_TAGS["$steam_id"]="$discord_tag"
     done < <(
-        jq -r 'to_entries[] | [.key, .value] | @tsv' "$USERS_FILE"
+        jq -r '
+            .users[]
+            | [.steam_id, .player_name, .discord_tag]
+            | @tsv
+        ' "$USERS_FILE"
     )
 }
-
 
 notify() {
     local message="$1"
@@ -144,7 +151,8 @@ process_line() {
     local line="$1"
     local name
     local steam_id
-    local label
+    local known_name
+    local discord_tag
     local now
 
 
@@ -157,8 +165,10 @@ process_line() {
 
         PENDING_USERS["$name"]="$steam_id"
 
-        if [[ -n "${KNOWN_USERS[$steam_id]-}" ]]; then
-            echo "Recognized login request: $name ($steam_id)"
+        if [[ -n "${PLAYER_NAMES[$steam_id]-}" ]]; then
+            echo "Known player login request: $name ($steam_id)"
+        else
+            echo "Other player login request: $name ($steam_id)"
         fi
 
         return
@@ -178,20 +188,37 @@ process_line() {
 
         unset 'PENDING_USERS[$name]'
 
-        # Ignore users we aren't watching.
-        [[ -z "${KNOWN_USERS[$steam_id]-}" ]] && return
-
         # Avoid duplicate join notifications.
         [[ -n "${ACTIVE_USERS[$steam_id]-}" ]] && return
 
+        #
+        # Track EVERY human player, known or unknown.
+        #
         ACTIVE_USERS["$steam_id"]="$name"
 
-        label="${KNOWN_USERS[$steam_id]}"
+        #
+        # Known player
+        #
+        if [[ -n "${PLAYER_NAMES[$steam_id]-}" ]]; then
 
-        if [[ "$label" == "$name" ]]; then
-            notify "🟢 $name joined the server"
+            known_name="${PLAYER_NAMES[$steam_id]}"
+            discord_tag="${DISCORD_TAGS[$steam_id]-}"
+
+            #
+            # This also lets us notice if a known player changes
+            # their Steam display name.
+            #
+            if [[ "$name" != "$known_name" ]]; then
+                notify "🟢 $discord_tag joined the server as **$name**"
+            else
+                notify "🟢 $discord_tag joined the server"
+            fi
+
+        #
+        # Everyone else
+        #
         else
-            notify "🟢 $label entered into battle"
+            notify "👤 '**$name**' joined the server"
         fi
 
         return
@@ -204,7 +231,17 @@ process_line() {
     if [[ "$line" =~ UChannel::Close:.*IsServer:\ YES.*UniqueId:\ SteamNWI:([0-9]+) ]]; then
         steam_id="${BASH_REMATCH[1]}"
 
-        [[ -z "${KNOWN_USERS[$steam_id]-}" ]] && return
+        #
+        # Capture the active name and remove EVERY human from
+        # ACTIVE_USERS, whether they're known or unknown.
+        #
+        name="${ACTIVE_USERS[$steam_id]-}"
+        unset 'ACTIVE_USERS[$steam_id]'
+
+        #
+        # We currently only send leave notifications for known players.
+        #
+        [[ -z "${PLAYER_NAMES[$steam_id]-}" ]] && return
 
         now=$SECONDS
 
@@ -216,15 +253,19 @@ process_line() {
 
         LAST_LEAVE["$steam_id"]=$now
 
-        label="${KNOWN_USERS[$steam_id]}"
-        name="${ACTIVE_USERS[$steam_id]-}"
+        known_name="${PLAYER_NAMES[$steam_id]}"
+        discord_tag="${DISCORD_TAGS[$steam_id]-}"
 
-        unset 'ACTIVE_USERS[$steam_id]'
+        #
+        # If for some reason we didn't have the active player name,
+        # fall back to the configured known name.
+        #
+        [[ -z "$name" ]] && name="$known_name"
 
-        if [[ -n "$name" && "$name" != "$label" ]]; then
-            notify "🔴 $label left the server"
+        if [[ "$name" != "$known_name" ]]; then
+            notify "🔴 $discord_tag (**$name**) left the server"
         else
-            notify "🔴 $label left the server"
+            notify "🔴 $discord_tag left the server"
         fi
 
         return
@@ -264,7 +305,7 @@ run_watcher() {
     load_users
 
     echo "$(date): Watching Docker container: $CONTAINER"
-    echo "$(date): Loaded ${#KNOWN_USERS[@]} watched users."
+    echo "$(date): Loaded ${#PLAYER_NAMES[@]} known users."
 
     while true; do
 

@@ -1,4 +1,9 @@
 {
-  "SteamPlayerID1234": "<@DiscordUserID1>",
-  "SteamPlayerID2345": "<@DiscordUserID2>"
+  "users": [
+    {
+      "steam_id": "",
+      "player_name": "",
+      "discord_tag": "<@>"
+    }
+  ]
 }
