@@ -1,8 +1,6 @@
 # insurgency-notifications-bot
 
-Tiny watcher for an **Insurgency: Sandstorm** dedicated server running in Docker. It follows that container's logs through `/var/run/docker.sock` and sends Discord webhook notifications.
-
-The original bash scripts are still in the repo. The Python app is the Docker-friendly rewrite: same events, same notify policy, split into a runtime, log scanner, state, and drop-in event modules.
+Tiny Python watcher for an **Insurgency: Sandstorm** dedicated server running in Docker. It follows that container's logs through `/var/run/docker.sock` and sends Discord webhook notifications.
 
 ## What it notifies today
 
@@ -12,7 +10,7 @@ The original bash scripts are still in the repo. The Python app is the Docker-fr
 - Map / scenario change — silent
 - Steam name ≠ configured name is called out on join/leave
 
-Kill tracking is **not** included. The bash version tried `DoubleKillProtection` lines and mis-attributed teammate kills; those log lines still have no team field.
+Kill tracking is **not** included. `DoubleKillProtection` log lines have names and timestamps, not teams, so they mis-attribute teammate kills.
 
 ## Run with Docker
 
@@ -81,13 +79,3 @@ Fixtures are redacted slices of real dedicated-server logs (Steam IDs and IPs re
 ```bash
 PYTHONPATH=. python -m unittest discover -s tests -v
 ```
-
-## Bash scripts (legacy)
-
-```text
-./insurgency_watcher.sh -start
-./insurgency_watcher.sh -stop
-./insurgency_watcher.sh -status
-```
-
-Do not run bash and Python against the same Discord webhook at the same time.
