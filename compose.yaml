@@ -1,6 +1,7 @@
 services:
   watcher:
     build: .
+    image: telnetdoogie/insurgency-notifications-bot:latest
     container_name: insurgency-notifications-bot
     restart: unless-stopped
     environment:
