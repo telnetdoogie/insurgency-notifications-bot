@@ -1,0 +1,11 @@
+[2026.10.02-11.36.29:480][435]LogOnline: Warning: OSS: EOS AUTH HANDLER:  Deactivating due to missing requirements
+[2026.10.02-11.36.29:512][438]LogNet: Login request: ?Name=LouiSypher userId: SteamNWI:76561198000000002 platform: SteamNWI
+[2026.10.02-11.36.32:215][756]LogNet: Client netspeed is 100000
+[2026.10.02-11.36.32:215][756]LogNet: Join request: /Game/Maps/Farmhouse/Farmhouse?Name=LouiSypher?SplitscreenCount=1
+[2026.10.02-11.36.32:251][756]LogGameMode: Display: LouiSypher has been automatically assigned to team 1
+[2026.10.02-11.36.32:251][756]LogINSPlayerController: AINSPlayerController::OnTeamChanged Authority TeamId: 1, TeamInfo: TeamInfo_2147481725, Faction: Insurgents
+[2026.10.02-11.36.32:252][756]LogNet: Join succeeded: LouiSypher
+[2026.10.02-11.36.49:683][808]LogNet: UChannel::ReceivedSequencedBunch: Bunch.bClose == true. ChIndex == 0. Calling ConditionalCleanUp.
+[2026.10.02-11.36.49:683][808]LogNet: UChannel::CleanUp: ChIndex == 0. Closing connection. [UChannel] ChIndex: 0, Closing: 0 [UNetConnection] RemoteAddr: 203.0.113.10:59429, Name: IpConnection_2147481325, Driver: GameNetDriver IpNetDriver_2147482540, IsServer: YES
+[2026.10.02-11.36.49:683][808]LogNet: UNetConnection::Close: [UNetConnection] RemoteAddr: 203.0.113.10:59429, Name: IpConnection_2147481325, Driver: GameNetDriver IpNetDriver_2147482540, IsServer: YES
+[2026.10.02-11.36.49:683][808]LogNet: UChannel::Close: Sending CloseBunch. ChIndex == 0. Name: [UChannel] ChIndex: 0, Closing: 0 [UNetConnection] RemoteAddr: 203.0.113.10:59429, Name: IpConnection_2147481325, Driver: GameNetDriver IpNetDriver_2147482540, IsServer: YES, PC: INSPlayerController_2147481321, Owner: INSPlayerController_2147481321, UniqueId: SteamNWI:76561198000000002

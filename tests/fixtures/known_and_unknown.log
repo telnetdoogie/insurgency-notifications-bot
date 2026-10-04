@@ -1,0 +1,6 @@
+[2026.10.02-21.46.16:470][699]LogNet: Login request: ?Name=telnetdoogie userId: SteamNWI:76561198000000001 platform: SteamNWI
+[2026.10.02-21.46.17:678][841]LogNet: Login request: ?Name=freshlogic userId: SteamNWI:76561198000000003 platform: SteamNWI
+[2026.10.02-21.46.20:722][199]LogNet: Join succeeded: telnetdoogie
+[2026.10.02-21.46.22:165][369]LogNet: Join succeeded: freshlogic
+[2026.10.02-23.05.55:957][567]LogNet: UChannel::Close: Sending CloseBunch. ChIndex == 0. Name: [UChannel] ChIndex: 0, Closing: 0 [UNetConnection] RemoteAddr: 203.0.113.11:55693, Name: IpConnection_2147449059, Driver: GameNetDriver IpNetDriver_2147482540, IsServer: YES, PC: INSPlayerController_2147448994, Owner: INSPlayerController_2147448994, UniqueId: SteamNWI:76561198000000003
+[2026.10.02-23.24.56:692][621]LogNet: UChannel::Close: Sending CloseBunch. ChIndex == 0. Name: [UChannel] ChIndex: 0, Closing: 0 [UNetConnection] RemoteAddr: 192.0.2.1:52829, Name: IpConnection_2147449064, Driver: GameNetDriver IpNetDriver_2147482540, IsServer: YES, PC: INSPlayerController_2147449045, Owner: INSPlayerController_2147449045, UniqueId: SteamNWI:76561198000000001

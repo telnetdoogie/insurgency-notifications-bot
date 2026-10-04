@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+.env.example
+__pycache__
+*.pyc
+.venv
+tests
+.github
+*.sh
+README.md
+compose.yaml

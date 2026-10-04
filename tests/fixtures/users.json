@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "steam_id": "76561198000000001",
+      "player_name": "telnetdoogie",
+      "discord_tag": "<@known-doogie>"
+    },
+    {
+      "steam_id": "76561198000000002",
+      "player_name": "LouiSypher",
+      "discord_tag": "<@known-loui>"
+    }
+  ]
+}

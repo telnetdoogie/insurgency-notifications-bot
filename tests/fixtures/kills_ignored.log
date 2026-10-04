@@ -1,0 +1,7 @@
+[2026.10.02-13.56.56:938][875]LogGameMode: Display: [DoubleKillProtection] Registered kill: PlayerState=Rifleman at Time=12989.249
+[2026.10.02-13.56.59:565][180]LogGameMode: Display: [DoubleKillProtection] Removing PlayerState=Rifleman at Time=12991.959
+[2026.10.02-13.56.59:565][180]LogGameMode: Display: [DoubleKillProtection] Registered kill: PlayerState=Observer at Time=12991.959
+[2026.10.02-13.58.16:406][214]LogGameMode: Display: [DoubleKillProtection] Removing PlayerState=Breacher at Time=13071.378
+[2026.10.02-13.58.16:406][214]LogGameMode: Display: [DoubleKillProtection] Registered kill: PlayerState=telnetdoogie at Time=13071.378
+[2026.10.02-14.00.05:594][ 41]LogGameMode: Display: [DoubleKillProtection] Removing PlayerState=telnetdoogie at Time=13184.199
+[2026.10.02-14.00.05:594][ 41]LogGameMode: Display: [DoubleKillProtection] Registered kill: PlayerState=telnetdoogie at Time=13184.199

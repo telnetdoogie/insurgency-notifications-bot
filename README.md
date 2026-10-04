@@ -1,18 +1,93 @@
 # insurgency-notifications-bot
-**Bot for notification (Discord etc) of Insurgency:Sandstorm events**
 
----
+Tiny watcher for an **Insurgency: Sandstorm** dedicated server running in Docker. It follows that container's logs through `/var/run/docker.sock` and sends Discord webhook notifications.
 
-This tiny script will watch the logs for Insurgency:Sandstorm dedicated server (in this case, running in a docker container) and notify users in discord or other destinations of events such as player joins from a known set of users, player deaths, team wins, and other relevant information.
+The original bash scripts are still in the repo. The Python app is the Docker-friendly rewrite: same events, same notify policy, split into a runtime, log scanner, state, and drop-in event modules.
 
-### Rev 1 
-...just announces known players joining the server. More to come.
+## What it notifies today
 
-> Simplest version is a background shell script that reads the log file.
-Later revisions will be a more robust python-based tiny app with configurable regex triggers for event detection.
+- Known player join — noisy Discord notification
+- Unknown human join — silent
+- Known player leave — silent, with a 10s flap debounce
+- Map / scenario change — silent
+- Steam name ≠ configured name is called out on join/leave
 
-### Usage
+Kill tracking is **not** included. The bash version tried `DoubleKillProtection` lines and mis-attributed teammate kills; those log lines still have no team field.
 
-* `./insurgency_wacther.sh -start` - Start in the background.
-* `./insurgency_wacther.sh -stop)` - Stop the running script.
-* `./insurgency_wacther.sh -status` - Show the current status (running or stopped)
+## Run with Docker
+
+1. Copy `.env.example` to `.env` and set `DISCORD_WEBHOOK_URL`.
+2. Fill in `users.json` (Steam ID, in-game name, Discord mention).
+3. Start next to the Sandstorm container:
+
+```bash
+docker compose up -d --build
+```
+
+The watcher mounts the host Docker socket and follows `CONTAINER_NAME` (default `insurgency-sandstorm`).
+
+### Environment
+
+- `DISCORD_WEBHOOK_URL` — required Discord webhook
+- `DISCORD_USERNAME` — webhook display name (default `Sandstorm`)
+- `CONTAINER_NAME` — container whose logs to follow (default `insurgency-sandstorm`)
+- `DOCKER_SOCKET` — Docker Engine socket (default `/var/run/docker.sock`)
+- `USERS_FILE` — known-player list (default `/config/users.json`)
+- `RECONNECT_SECONDS` — wait after the log stream drops (default `2`)
+- `LEAVE_DEBOUNCE_SECONDS` — ignore repeat leaves for the same Steam ID (default `10`)
+
+`docker.sock` is powerful (it is effectively host root). This is meant as a homelab sidecar, not a locked-down multi-tenant service.
+
+## Local replay
+
+Useful against a saved log, no Discord:
+
+```bash
+PYTHONPATH=. python -m insurgency_bot --print-only --file /path/to/server.log
+```
+
+## Layout
+
+```text
+insurgency_bot/
+  __main__.py          runtime CLI
+  scanner.py           docker.sock (and file) log source
+  runtime.py           line loop + reconnect
+  state/players.py     roster, pending joins, leave debounce
+  state/server.py      current map
+  events/join.py       login + join
+  events/leave.py      disconnect
+  events/map_change.py ProcessServerTravel
+  actions/             Discord webhook (voice/audio can sit beside this later)
+```
+
+### Adding an event
+
+Create `insurgency_bot/events/your_event.py` with a `Handler` class:
+
+```python
+class Handler:
+    def handle(self, line, players, server):
+        # return a list of NotifyAction(message, noisy=False)
+        return []
+```
+
+Modules in that folder are auto-loaded. Keep parsing in the event; keep who-is-online / what-map-is-up in `players` / `server`; do not post to Discord from the event.
+
+## Tests
+
+Fixtures are redacted slices of real dedicated-server logs (Steam IDs and IPs replaced).
+
+```bash
+PYTHONPATH=. python -m unittest discover -s tests -v
+```
+
+## Bash scripts (legacy)
+
+```text
+./insurgency_watcher.sh -start
+./insurgency_watcher.sh -stop
+./insurgency_watcher.sh -status
+```
+
+Do not run bash and Python against the same Discord webhook at the same time.

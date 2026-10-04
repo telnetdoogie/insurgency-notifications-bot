@@ -1,0 +1,6 @@
+[2026.10.02-10.22.35:488][  0]LogGameMode: ProcessServerTravel: Gap?Scenario=Scenario_Gap_Checkpoint_Insurgents
+[2026.10.02-14.01.33:245][334]LogGameMode: ProcessServerTravel: ?restart
+[2026.10.02-14.42.01:649][647]LogGameMode: ProcessServerTravel: Canyon?Scenario=Scenario_Crossing_Checkpoint_Security?Game=Checkpoint?Lighting=Night?
+[2026.10.02-22.36.43:114][ 72]LogGameMode: ProcessServerTravel: Compound?Scenario=Scenario_Outskirts_Checkpoint_Insurgents?Game=Checkpoint?Lighting=Day?
+[2026.10.02-22.51.05:595][293]LogGameMode: ProcessServerTravel: Forest?Scenario=Scenario_Forest_Checkpoint_Security?Game=Checkpoint?Lighting=Day?
+[2026.10.04-15.55.52:753][496]LogGameMode: ProcessServerTravel: Town?Scenario=Scenario_Hideout_Checkpoint_Insurgents?Game=Checkpoint?Lighting=Day?
