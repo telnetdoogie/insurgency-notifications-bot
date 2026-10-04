@@ -5,11 +5,15 @@ import logging
 import urllib.error
 import urllib.request
 
+from .. import __version__
 from . import NotifyAction
 
 log = logging.getLogger(__name__)
 
 SILENT_FLAG = 4096  # SUPPRESS_NOTIFICATIONS
+USER_AGENT = (
+    f"DiscordBot (https://github.com/telnetdoogie/insurgency-notifications-bot, {__version__})"
+)
 
 
 class DiscordWebhookSink:
@@ -33,11 +37,22 @@ class DiscordWebhookSink:
             self.url,
             data=body,
             method="POST",
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": USER_AGENT,
+            },
         )
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 response.read()
+        except urllib.error.HTTPError as exc:
+            detail = exc.read()[:300].decode("utf-8", "replace")
+            log.warning(
+                "Discord webhook failed: HTTP %s %s %s",
+                exc.code,
+                exc.reason,
+                detail,
+            )
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             log.warning("Discord webhook failed: %s", exc)
 

@@ -60,6 +60,7 @@ class DiscordWebhookTests(unittest.TestCase):
             captured["url"] = request.full_url
             captured["body"] = json.loads(request.data.decode("utf-8"))
             captured["timeout"] = timeout
+            captured["user_agent"] = request.headers.get("User-agent") or request.get_header("User-agent")
             return FakeResponse()
 
         sink = DiscordWebhookSink("http://example.test/webhook", "Sandstorm")
@@ -72,6 +73,11 @@ class DiscordWebhookTests(unittest.TestCase):
         self.assertEqual(captured["body"]["flags"], 4096)
         self.assertEqual(captured["body"]["username"], "Sandstorm")
         self.assertEqual(captured["body"]["content"], "🗺️ map")
+        ua = captured["user_agent"]
+        self.assertIsInstance(ua, str)
+        assert isinstance(ua, str)
+        self.assertIn("DiscordBot", ua)
+        self.assertNotIn("Python-urllib", ua)
 
     def test_noisy_then_inspect_first_payload(self) -> None:
         from insurgency_bot.actions import NotifyAction
