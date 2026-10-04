@@ -48,7 +48,7 @@ class ReplayTests(unittest.TestCase):
             ],
         )
 
-    def test_map_changes_match_bash_parsing_and_ignore_restart(self) -> None:
+    def test_map_changes_match_scenario_parsing_and_ignore_restart(self) -> None:
         sink, _, server = replay(FIXTURES / "map_changes.log")
         self.assertEqual(
             [message for _, message in sink.pairs],
