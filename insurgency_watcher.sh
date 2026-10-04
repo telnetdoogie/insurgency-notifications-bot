@@ -13,7 +13,6 @@ WATCHER_LOG="/tmp/sandstorm-watcher.log"
 declare -A PLAYER_NAMES
 declare -A DISCORD_TAGS
 declare -A PENDING_USERS
-declare -A PENDING_KILL_VICTIMS
 declare -A ACTIVE_USERS
 declare -A LAST_LEAVE
 
@@ -175,15 +174,6 @@ process_line() {
     local known_name
     local discord_tag
     local now
-    # kill tracking
-    local victim
-    local killer
-    local kill_time
-    local victim_steam_id
-    local killer_steam_id
-    local victim_display
-    local killer_display
-    local victims
     # map tracking
     local map
     local internal_map
@@ -257,102 +247,6 @@ process_line() {
         else
             notify "👤 '**$name**' joined the server"
         fi
-
-        return
-    fi
-
-    #
-    # Kill event - victim
-    #
-    # Example:
-    # [DoubleKillProtection] Removing PlayerState=LouiSypher at Time=39609.691
-    #
-    if [[ "$line" =~ \[DoubleKillProtection\]\ Removing\ PlayerState=(.*)\ at\ Time=([0-9.]+) ]]; then
-        victim="${BASH_REMATCH[1]}"
-        kill_time="${BASH_REMATCH[2]}"
-
-        #
-        # Multiple victims can share the same timestamp, so accumulate them.
-        #
-        if [[ -n "${PENDING_KILL_VICTIMS[$kill_time]-}" ]]; then
-            PENDING_KILL_VICTIMS["$kill_time"]+=$'\n'"$victim"
-        else
-            PENDING_KILL_VICTIMS["$kill_time"]="$victim"
-        fi
-
-        return
-    fi
-
-
-    #
-    # Kill event - killer
-    #
-    # Example:
-    # [DoubleKillProtection] Registered kill: PlayerState=telnetdoogie at Time=39609.691
-    #
-    if [[ "$line" =~ \[DoubleKillProtection\]\ Registered\ kill:\ PlayerState=(.*)\ at\ Time=([0-9.]+) ]]; then
-        killer="${BASH_REMATCH[1]}"
-        kill_time="${BASH_REMATCH[2]}"
-
-        victims="${PENDING_KILL_VICTIMS[$kill_time]-}"
-        unset 'PENDING_KILL_VICTIMS[$kill_time]'
-
-        [[ -z "$victims" ]] && return
-
-        #
-        # Is the killer a currently-connected human?
-        # If not, they're a bot and we don't notify.
-        #
-        killer_steam_id="$(find_active_steam_id_by_name "$killer")"
-
-        [[ -z "$killer_steam_id" ]] && return
-
-        #
-        # Determine how to display the killer.
-        # Known players get a Discord mention.
-        # Unknown humans get their in-game name.
-        #
-        if [[ -n "${PLAYER_NAMES[$killer_steam_id]-}" ]]; then
-            killer_display="${DISCORD_TAGS[$killer_steam_id]}"
-        else
-            killer_display="**$killer**"
-        fi
-
-
-        #
-        # There may be more than one victim with this timestamp.
-        #
-        while IFS= read -r victim; do
-
-            [[ -z "$victim" ]] && continue
-
-            #
-            # Is the victim also a currently-connected human?
-            #
-            victim_steam_id="$(find_active_steam_id_by_name "$victim")"
-
-            #
-            # No human match means it was a bot.
-            #
-            [[ -z "$victim_steam_id" ]] && continue
-
-            #
-            # Ignore weird self-kill cases for now.
-            #
-            [[ "$victim_steam_id" == "$killer_steam_id" ]] && continue
-
-            #
-            # Known victims get their Discord mention too.
-            #
-            if [[ -n "${PLAYER_NAMES[$victim_steam_id]-}" ]]; then
-                victim_display="${DISCORD_TAGS[$victim_steam_id]}"
-            else
-                victim_display="**$victim**"
-            fi
-
-            notify "☠️ $victim_display was killed by $killer_display"
-
-        done <<< "$victims"
 
         return
     fi
