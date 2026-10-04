@@ -1,0 +1,14 @@
+services:
+  watcher:
+    build: .
+    container_name: insurgency-notifications-bot
+    restart: unless-stopped
+    environment:
+      CONTAINER_NAME: ${CONTAINER_NAME:-insurgency-sandstorm}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL}
+      DISCORD_USERNAME: ${DISCORD_USERNAME:-Sandstorm}
+      USERS_FILE: /config/users.json
+      DOCKER_SOCKET: /var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./users.json:/config/users.json:ro

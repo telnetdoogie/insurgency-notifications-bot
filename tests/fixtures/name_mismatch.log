@@ -1,0 +1,3 @@
+[2026.10.02-13.54.25:843][141]LogNet: Login request: ?Name=DoogieAlt userId: SteamNWI:76561198000000001 platform: SteamNWI
+[2026.10.02-13.54.29:705][595]LogNet: Join succeeded: DoogieAlt
+[2026.10.02-14.01.08:163][390]LogNet: UChannel::Close: Sending CloseBunch. ChIndex == 0. Name: [UChannel] ChIndex: 0, Closing: 0 [UNetConnection] RemoteAddr: 192.0.2.1:53590, Name: IpConnection_2147480906, Driver: GameNetDriver IpNetDriver_2147482540, IsServer: YES, PC: INSPlayerController_2147480902, Owner: INSPlayerController_2147480902, UniqueId: SteamNWI:76561198000000001
