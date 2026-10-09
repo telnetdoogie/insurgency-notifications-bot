@@ -27,6 +27,9 @@ class Handler:
         if result is None:
             return []
 
+        if result.known is None:
+            return [NotifyAction(f"👤 '**{result.name}**' left the server", noisy=False)]
+
         tag = result.known.discord_tag
         if result.name_changed:
             message = f"🔴 {tag} (**{result.name}**) left the server"

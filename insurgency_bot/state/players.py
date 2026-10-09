@@ -26,7 +26,7 @@ class JoinResult:
 class LeaveResult:
     steam_id: str
     name: str
-    known: KnownUser
+    known: KnownUser | None
     name_changed: bool
 
 
@@ -62,19 +62,21 @@ class PlayerRoster:
     def disconnect(self, steam_id: str) -> LeaveResult | None:
         name = self.active.pop(steam_id, None)
         known = self.known.get(steam_id)
-        if known is None:
+        # Known players still resolve through users.json. Unknown players need
+        # the session name from a join we actually saw.
+        session_name = name or (known.player_name if known else None)
+        if session_name is None:
             return None
         now = self.clock()
         last = self.last_leave.get(steam_id)
         if last is not None and (now - last) < self.debounce_seconds:
             return None
         self.last_leave[steam_id] = now
-        session_name = name or known.player_name
         return LeaveResult(
             steam_id=steam_id,
             name=session_name,
             known=known,
-            name_changed=session_name != known.player_name,
+            name_changed=bool(known and session_name != known.player_name),
         )
 
     def reset_session(self) -> None:
