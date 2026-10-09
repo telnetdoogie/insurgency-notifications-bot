@@ -6,7 +6,7 @@ Tiny Python watcher for an **Insurgency: Sandstorm** dedicated server running in
 
 - Known player join — noisy Discord notification
 - Unknown human join — silent
-- Known player leave — silent, with a 10s flap debounce
+- Known or unknown player leave — silent, with a 10s flap debounce
 - Map / scenario change — silent
 - Steam name ≠ configured name is called out on join/leave
 

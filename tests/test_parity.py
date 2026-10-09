@@ -26,17 +26,69 @@ class ReplayTests(unittest.TestCase):
         sink, _, _ = replay(FIXTURES / "known_join_leave.log")
         self.assertEqual(len(sink.actions), 2)
 
-    def test_unknown_join_is_silent_and_unknown_leave_is_omitted(self) -> None:
+    def test_unknown_join_and_leave_are_silent(self) -> None:
         sink, players, _ = replay(FIXTURES / "known_and_unknown.log")
         self.assertEqual(
             sink.pairs,
             [
                 (True, "🟢 <@known-doogie> joined the server"),
                 (False, "👤 '**freshlogic**' joined the server"),
+                (False, "👤 '**freshlogic**' left the server"),
                 (False, "🔴 <@known-doogie> left the server"),
             ],
         )
         self.assertEqual(players.active, {})
+
+    def test_unknown_close_without_join_is_omitted(self) -> None:
+        close = (
+            "LogNet: UChannel::Close: Sending CloseBunch. ChIndex == 0. Name: [UChannel] "
+            "ChIndex: 0, Closing: 0 [UNetConnection] RemoteAddr: 203.0.113.11:1, "
+            "Name: IpConnection_1, Driver: GameNetDriver IpNetDriver_1, IsServer: YES, "
+            "PC: INSPlayerController_1, Owner: INSPlayerController_1, "
+            "UniqueId: SteamNWI:76561198000000003"
+        )
+        sink, _, _ = replay_lines([close])
+        self.assertEqual(sink.pairs, [])
+
+    def test_leave_debounce_skips_flapping_unknown_player(self) -> None:
+        clock = FakeClock()
+        sink = RecordingSink()
+        players = PlayerRoster(
+            known=replay_roster().known,
+            debounce_seconds=10.0,
+            clock=clock,
+        )
+        handlers = create_handlers()
+        server = ServerState()
+        join = [
+            "LogNet: Login request: ?Name=freshlogic userId: SteamNWI:76561198000000003 platform: SteamNWI",
+            "LogNet: Join succeeded: freshlogic",
+        ]
+        close = (
+            "LogNet: UChannel::Close: Sending CloseBunch. ChIndex == 0. Name: [UChannel] "
+            "ChIndex: 0, Closing: 0 [UNetConnection] RemoteAddr: 203.0.113.11:1, "
+            "Name: IpConnection_1, Driver: GameNetDriver IpNetDriver_1, IsServer: YES, "
+            "PC: INSPlayerController_1, Owner: INSPlayerController_1, "
+            "UniqueId: SteamNWI:76561198000000003"
+        )
+        run(join, handlers, players, server, sink.send)
+        process_line(close, handlers, players, server, sink.send)
+        clock.advance(4.0)
+        run(join, handlers, players, server, sink.send)
+        process_line(close, handlers, players, server, sink.send)
+        clock.advance(7.0)
+        run(join, handlers, players, server, sink.send)
+        process_line(close, handlers, players, server, sink.send)
+        self.assertEqual(
+            sink.pairs,
+            [
+                (False, "👤 '**freshlogic**' joined the server"),
+                (False, "👤 '**freshlogic**' left the server"),
+                (False, "👤 '**freshlogic**' joined the server"),
+                (False, "👤 '**freshlogic**' joined the server"),
+                (False, "👤 '**freshlogic**' left the server"),
+            ],
+        )
 
     def test_name_mismatch_uses_session_name(self) -> None:
         sink, _, _ = replay(FIXTURES / "name_mismatch.log")
