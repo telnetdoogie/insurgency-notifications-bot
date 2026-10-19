@@ -22,6 +22,17 @@ class ReplayTests(unittest.TestCase):
         )
         self.assertEqual(players.active, {})
 
+    def test_login_with_leading_query_fields_still_joins(self) -> None:
+        sink, players, _ = replay_lines(
+            [
+                "LogNet: Login request: ?InputDevice=2?Name=telnetdoogie "
+                "userId: SteamNWI:76561198000000001 platform: SteamNWI",
+                "LogNet: Join succeeded: telnetdoogie",
+            ]
+        )
+        self.assertEqual(sink.pairs, [(True, "🟢 <@known-doogie> joined the server")])
+        self.assertEqual(players.active, {"76561198000000001": "telnetdoogie"})
+
     def test_join_request_and_team_lines_do_not_notify(self) -> None:
         sink, _, _ = replay(FIXTURES / "known_join_leave.log")
         self.assertEqual(len(sink.actions), 2)
