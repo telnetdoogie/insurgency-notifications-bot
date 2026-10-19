@@ -10,8 +10,11 @@ from ..state.server import ServerState
 
 log = logging.getLogger(__name__)
 
+# Sandstorm used to emit `Login request: ?Name=...`. Later builds insert
+# other query fields first (`?InputDevice=2?Name=...`). Accept any run of
+# `?Key=Value` pairs before Name so both shapes bind the Steam ID.
 LOGIN_RE = re.compile(
-    r"Login request: \?Name=(.*) userId: SteamNWI:(\d+) platform:"
+    r"Login request: \?(?:[^=?]+=[^?]*\?)*Name=(.*) userId: SteamNWI:(\d+) platform:"
 )
 JOIN_RE = re.compile(r"LogNet: Join succeeded: (.+)$")
 
